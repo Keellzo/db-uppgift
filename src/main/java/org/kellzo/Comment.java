@@ -1,25 +1,61 @@
 package org.kellzo;
 
-import java.sql.*;
-import java.util.Scanner;
-
 public class Comment {
+    private int id;
+    private String comment;
+    private String created;
+    private int postId;
+    private int userId;
 
-    public static void addRowToCommentTable(Statement statement, Scanner scanner) throws SQLException {
-        System.out.println("Skriv in kommentar");
-        System.out.println();
-        String query = "INSERT INTO comment (comment) VALUES ('" + scanner.nextLine() + "')";
-        statement.executeUpdate(query);
+
+    public Comment(int id, String comment, String created, int postId, int userId) {
+        this.id = id;
+        this.comment = comment;
+        this.created = created;
+        this.postId = postId;
+        this.userId = userId;
     }
 
-    public static void printCommentTable(Statement statement) throws SQLException {
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM comment");
+    public Comment() {
+    }
 
-        while (resultSet.next()) {
-            System.out.println("Comment: " + resultSet.getString("comment"));
-            System.out.println("Created: " + resultSet.getString("created"));
+    public int getId() {
+        return id;
+    }
 
-            System.out.println("--------------------");
-        }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getCreated() {
+        return created;
+    }
+
+    public void setCreated(String created) {
+        this.created = created;
+    }
+
+    public int getPostId() {
+        return postId;
+    }
+
+    public void setPostId(int postId) {
+        this.postId = postId;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 }

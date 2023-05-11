@@ -8,29 +8,30 @@ public class Main {
         String url = "jdbc:mysql://localhost:3306/uppgift1";
         String user = "root";
         String password = "";
-
         Scanner scanner = new Scanner(System.in);
 
         try (Connection connection = DriverManager.getConnection(url, user, password)) {
             System.out.println("Anslutning till databasen lyckades!");
             System.out.println();
-            Statement statement = connection.createStatement();
 
-            // User methods
-//            User.addRowToUserTable(statement, scanner);
-//            User.printUserTable(statement);
-//            User.getOnlineUsers(statement);
+//            UserService methods
 
-            // Post methods
-//             Post.addRowToPostTable(statement, scanner);
-//             Post.printPostTable(statement);
-//             Post.getPostByDate(statement);
-//               Post.getPostsByOfflineUsersWithComments(statement);
-//               Post.getQuantityOfPostsByUsers(statement);
-               Post.getQuantityOfPostsByUsersFromCertainDate(statement);
-            // Comment methods
-//             Comment.addRowToCommentTable(statement, scanner);
-//             Comment.printCommentTable(statement);
+//            UserService.addRowToUserTable(connection, scanner);
+//            UserService.printOnlineUsers(connection);
+//            UserService.printUserTable(connection);
+
+//            CommentService methods
+
+//            CommentService.printCommentTable(connection);
+//            CommentService.addRowToCommentTable(connection, scanner);
+
+//            PostService methods
+
+//            PostService.printPostTable(connection);
+//            PostService.addRowToPostTable(connection, scanner);
+//            PostService.getPostsByOfflineUsersWithComments(connection);
+//            PostService.getQuantityOfPostsByUsersFromCertainDate(connection);
+//            PostService.getPostByDate(connection);
 
         } catch (SQLException e) {
             System.err.println("Anslutning till databasen misslyckades:");

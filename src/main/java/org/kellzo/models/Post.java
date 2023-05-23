@@ -1,18 +1,40 @@
-package org.kellzo;
+package org.kellzo.models;
+
+import java.util.List;
 
 public class Post {
     private int id;
     private String post;
     private String created;
     private int users_id;
+    private boolean visible;
 
-    public Post(int id, String post, String created, int users_id) {
+    private List<Comment> comments;
+
+    public Post(int id, String post, String created, int users_id, boolean visible, List<Comment> comments) {
         this.id = id;
         this.post = post;
         this.created = created;
         this.users_id = users_id;
+        this.visible = visible;
+        this.comments = comments;
     }
 
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
 
     public Post() {
     }

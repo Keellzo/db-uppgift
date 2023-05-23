@@ -1,4 +1,4 @@
-package org.kellzo;
+package org.kellzo.models;
 
 public class Comment {
     private int id;
@@ -7,8 +7,10 @@ public class Comment {
     private int postId;
     private int userId;
 
+    private int visible;
 
-    public Comment(int id, String comment, String created, int postId, int userId) {
+
+    public Comment(int id, String comment, String created, int postId, int userId, int visible) {
         this.id = id;
         this.comment = comment;
         this.created = created;
@@ -17,6 +19,14 @@ public class Comment {
     }
 
     public Comment() {
+    }
+
+    public int getVisible() {
+        return visible;
+    }
+
+    public void setVisible(int visible) {
+        this.visible = visible;
     }
 
     public int getId() {

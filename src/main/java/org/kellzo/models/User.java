@@ -1,4 +1,4 @@
-package org.kellzo;
+package org.kellzo.models;
 
 public class User {
     private int users_id;
@@ -9,7 +9,9 @@ public class User {
     private String created;
     private boolean online;
 
-    public User(int users_id, String name, String email, String phone, String adress, String created, boolean online) {
+    private String password;
+
+    public User(int users_id, String name, String email, String phone, String adress, String created, boolean online, String password) {
         this.users_id = users_id;
         this.name = name;
         this.email = email;
@@ -20,6 +22,14 @@ public class User {
     }
 
     public User() {
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public int getUsers_id() {

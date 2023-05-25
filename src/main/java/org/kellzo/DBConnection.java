@@ -21,10 +21,8 @@ public class DBConnection {
                 System.out.println("Sorry, unable to find config.properties");
             }
 
-            // Load a properties file
             prop.load(input);
 
-            // Get the property values
             url = prop.getProperty("db.url");
             user = prop.getProperty("db.user");
             password = prop.getProperty("db.password");

@@ -1,8 +1,0 @@
-maj 16, 2023 2:51:32 EM org.kellzo.services.UserService addRowToUserTable
-INFO: 2023-05-16 14:51:32.0 Användare ”Filip” skapades med epost ”Filip@”.
-maj 17, 2023 11:14:08 FM org.kellzo.services.UserService addRowToUserTable
-INFO: 2023-05-17 11:14:08.0 Användare ”kelly” skapades med epost ”kelly@”.
-maj 17, 2023 11:19:57 FM org.kellzo.services.UserService addRowToUserTable
-INFO: 2023-05-17 11:19:57.0 Användare ”kelly” skapades med epost ””.
-maj 23, 2023 5:16:21 EM org.kellzo.services.UserService addRowToUserTable
-INFO: 2023-05-23 17:16:21.0 Användare ”adam” skapades med epost ”adam@”.

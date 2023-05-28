@@ -35,7 +35,6 @@ public class UserService {
             if (BCrypt.checkpw(password, storedHashedPassword)) {
                 return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), password, rs.getString("social_security_number"));
             }
-
         }
 
         throw new SQLException("Invalid login details");
@@ -66,7 +65,6 @@ public class UserService {
                 throw new SQLException("Creating user failed, no ID obtained.");
             }
         }
-
     }
 
     public User getUserByUsername(String username) throws SQLException {

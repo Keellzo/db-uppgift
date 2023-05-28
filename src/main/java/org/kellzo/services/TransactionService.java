@@ -11,7 +11,7 @@ import java.util.List;
 public class TransactionService {
     private final Connection connection;
     private final AccountService accountService;
-    private UserService userService; // removed final keyword
+    private UserService userService;
 
     public TransactionService(Connection connection, AccountService accountService) {
         this.connection = connection;
@@ -45,17 +45,17 @@ public class TransactionService {
             throw new IllegalArgumentException("Source account does not have enough balance for the transaction.");
         }
 
-        // Create a new transaction from the source account to the destination account.
+
         Transaction transaction = new Transaction();
         transaction.setFromAccountId(sourceAccount.getId());
         transaction.setToAccountId(destinationAccount.getId());
         transaction.setAmount(amount);
 
-        // Update the balances of the source and destination accounts.
+
         sourceAccount.setBalance(sourceAccount.getBalance() - amount);
         destinationAccount.setBalance(destinationAccount.getBalance() + amount);
 
-        // Save the updated account balances and the new transaction.
+
         accountService.updateAccount(sourceAccount);
         accountService.updateAccount(destinationAccount);
         addTransaction(transaction);

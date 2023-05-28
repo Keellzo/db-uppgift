@@ -167,7 +167,7 @@ public class Menu {
                     }
                     case 7 -> {
                         userService.removeUser(currentUser.getId());
-                        currentUser = null; // logout the user since their account is now removed
+                        currentUser = null;
                         System.out.println("Your user account has been successfully removed.");
                     }
                     case 8 -> {

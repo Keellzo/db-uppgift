@@ -4,6 +4,7 @@ import org.kellzo.models.*;
 import org.kellzo.services.*;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
@@ -15,10 +16,13 @@ public class Menu {
     private User currentUser = null;
 
     public Menu(Connection connection) {
-        this.userService = new UserService(connection, new AccountService(connection), new TransactionService(connection, new AccountService(connection)));
         this.accountService = new AccountService(connection);
-        this.transactionService = new TransactionService(connection, new AccountService(connection));
+        this.transactionService = new TransactionService(connection, accountService);
+        this.userService = new UserService(connection, accountService, transactionService);
+
+        this.transactionService.setUserService(userService);
     }
+
 
     public void start() throws SQLException {
         boolean exit = false;
@@ -35,117 +39,156 @@ public class Menu {
                 scanner.nextLine();
 
                 switch (option) {
-                    case 1:
-                        System.out.println("Enter account number:");
-                        String accountNumber = scanner.nextLine();
-                        System.out.println("Enter initial balance:");
-                        double initialBalance = scanner.nextDouble();
-                        scanner.nextLine(); // consume the newline
-                        Account newAccount = new Account(0, null, currentUser.getId(), initialBalance, accountNumber);
-                        accountService.addAccount(newAccount);
-                        System.out.println("Account successfully added!");
-                        break;
-
-                    case 2:
-                        System.out.println("Enter your username:");
-                        String loginUsername = scanner.nextLine();
-                        System.out.println("Enter your password:");
+                    case 1 -> {
+                        System.out.println("Enter username:");
+                        String addUsername = scanner.nextLine();
+                        System.out.println("Enter password:");
+                        String addPassword = scanner.nextLine();
+                        System.out.println("Enter social security number:");
+                        String addSocialSecurityNumber = scanner.nextLine();
+                        User newUser = new User();
+                        newUser.setUsername(addUsername);
+                        newUser.setPassword(addPassword);
+                        newUser.setSocialSecurityNumber(addSocialSecurityNumber);
+                        userService.addUser(newUser);
+                        currentUser = newUser;
+                        System.out.println("User successfully added!");
+                    }
+                    case 2 -> {
+                        System.out.println("Enter social security number:");
+                        String loginSocialSecurityNumber = scanner.nextLine();
+                        System.out.println("Enter password:");
                         String loginPassword = scanner.nextLine();
-                        User user = userService.loginUser(loginUsername, loginPassword);
-                        if (user != null) {
-                            currentUser = user;
-                            System.out.println("Successfully logged in!");
-                        } else {
-                            System.out.println("Invalid username or password.");
+                        try {
+                            currentUser = userService.loginUser(loginSocialSecurityNumber, loginPassword);
+                            System.out.println("Login successful!");
+                        } catch (SQLException e) {
+                            System.out.println("Login failed: " + e.getMessage());
                         }
-                        break;
-                    case 3:
-                        exit = true;
-                        break;
-                    default:
-                        System.out.println("Invalid option. Please choose a valid one.");
+                    }
+                    case 3 -> exit = true;
+                    default -> System.out.println("Invalid option. Please choose a valid one.");
                 }
             } else {
                 System.out.println("Select an option: ");
                 System.out.println("1. Add Account");
                 System.out.println("2. Remove Account");
                 System.out.println("3. Update User Details");
-                System.out.println("4. Send Transaction");
-                System.out.println("5. List Transactions");
-                System.out.println("6. Display User Summary");
-                System.out.println("7. Logout");
-                System.out.println("8. Exit");
+                System.out.println("4. List Transactions from a certain date");
+                System.out.println("5. Display User Summary");
+                System.out.println("6. Logout");
+                System.out.println("7. Remove My User Account");
+                System.out.println("8. Send Transaction to Another User");
+                System.out.println("9. Exit");
+
 
                 int option = scanner.nextInt();
-                scanner.nextLine(); // consume the newline
+                scanner.nextLine();
 
                 switch (option) {
-                    case 1:
-                        System.out.println("Enter account number:");
-                        String accountNumber = scanner.nextLine();
+                    case 1 -> {
+                        System.out.println("Enter account name:");
+                        String accountName = scanner.nextLine();
                         System.out.println("Enter initial balance:");
                         double initialBalance = scanner.nextDouble();
-                        scanner.nextLine(); // consume the newline
-                        Account newAccount = new Account(0, null, currentUser.getId(), initialBalance, accountNumber);
+                        scanner.nextLine();
+                        Account newAccount = new Account(0, null, currentUser.getId(), initialBalance, accountName);
                         accountService.addAccount(newAccount);
                         System.out.println("Account successfully added!");
-                        break;
-
-                    case 2:
-                        System.out.println("Enter account number to remove:");
-                        String accountNumberToRemove = scanner.nextLine();
-                        accountService.removeAccount(accountNumberToRemove);
+                    }
+                    case 2 -> {
+                        System.out.println("Enter account name to remove:");
+                        String accountNameToRemove = scanner.nextLine();
+                        accountService.removeAccount(accountNameToRemove);
                         System.out.println("Account successfully removed!");
-                        break;
-
-                    case 3:
-                        // I'm assuming updateUser takes in a User object and updates the details in the database.
-                        // You may need to write some additional code here to get the new user details from the user.
+                    }
+                    case 3 -> {
+                        System.out.println("Enter new username:");
+                        String newUsername = scanner.nextLine();
+                        System.out.println("Enter new password:");
+                        String newPassword = scanner.nextLine();
+                        System.out.println("Enter new social security number:");
+                        String newSocialSecurityNumber = scanner.nextLine();
+                        currentUser.setUsername(newUsername);
+                        currentUser.setPassword(newPassword);
+                        currentUser.setSocialSecurityNumber(newSocialSecurityNumber);
                         userService.updateUser(currentUser);
                         System.out.println("User details successfully updated!");
-                        break;
-
-                    case 4:
-                        System.out.println("Enter source account number:");
-                        String sourceAccount = scanner.nextLine();
-                        System.out.println("Enter destination account number:");
-                        String destinationAccount = scanner.nextLine();
-                        System.out.println("Enter amount:");
-                        double amount = scanner.nextDouble();
-                        scanner.nextLine(); // consume the newline
-                        transactionService.sendTransaction(sourceAccount, destinationAccount, amount);
-                        System.out.println("Transaction successfully sent!");
-                        break;
-
-                    case 5:
-                        System.out.println("Enter account number:");
-                        String accountNumberForTransactions = scanner.nextLine();
-                        List<Transaction> transactions = transactionService.getTransactionsForUser(currentUser.getId());
-                        System.out.println("Transactions for account " + accountNumberForTransactions + ":");
+                    }
+                    case 4 -> {
+                        System.out.println("Enter account name:");
+                        String accountNameForTransactions = scanner.nextLine();
+                        Account account = accountService.getAccountByAccountName(accountNameForTransactions);
+                        System.out.println("Enter start date (format YYYY-MM-DD):");
+                        String startDateInput = scanner.nextLine();
+                        Date startDate = Date.valueOf(startDateInput);
+                        System.out.println("Enter end date (format YYYY-MM-DD):");
+                        String endDateInput = scanner.nextLine();
+                        Date endDate = Date.valueOf(endDateInput);
+                        List<Transaction> transactions = transactionService.getTransactionsForAccountBetweenDates(account.getId(), startDate, endDate);
+                        System.out.println("Transactions for account " + accountNameForTransactions + ":");
                         for (Transaction transaction : transactions) {
-                            System.out.println(transaction);
-                        }
-                        break;
+                            String fromAccountName = accountService.getAccountById(transaction.getFromAccountId()).getAccountName();
+                            String toAccountName = accountService.getAccountById(transaction.getToAccountId()).getAccountName();
 
-                    case 6:
-                        System.out.println(currentUser);
-                        List<Account> accounts = accountService.getAccountsForUser(currentUser.getId());
-                        for (Account account : accounts) {
-                            System.out.println(account);
+                            System.out.println(
+                                    "Transaction ID: " + transaction.getId() +
+                                            ", Created at: " + transaction.getCreated() +
+                                            ", From Account Name: " + fromAccountName +
+                                            ", To Account Name: " + toAccountName +
+                                            ", Amount: " + transaction.getAmount()
+                            );
                         }
-                        break;
+                    }
+                    case 5 -> {
+                        UserSummary userSummary = userService.getUserSummary(currentUser.getId());
+                        System.out.println("User: " + userSummary.getUser().getUsername());
+                        System.out.println("\nAccounts:");
+                        for (Account accounts : userSummary.getAccounts()) {
+                            System.out.println("Account ID: " + accounts.getId() +
+                                    ", Balance: " + accounts.getBalance() +
+                                    ", Account Name: " + accounts.getAccountName());
+                        }
+                        System.out.println("\nTransactions:");
+                        for (Transaction transaction : userSummary.getTransactions()) {
+                            String fromAccountName = accountService.getAccountById(transaction.getFromAccountId()).getAccountName();
+                            String toAccountName = accountService.getAccountById(transaction.getToAccountId()).getAccountName();
 
-                    case 7:
+                            System.out.println("Transaction ID: " + transaction.getId() +
+                                    ", Created at: " + transaction.getCreated() +
+                                    ", From Account Name: " + fromAccountName +
+                                    ", To Account Name: " + toAccountName +
+                                    ", Amount: " + transaction.getAmount());
+                        }
+                    }
+                    case 6 -> {
                         currentUser = null;
                         System.out.println("You have logged out.");
-                        break;
-
-                    case 8:
-                        exit = true;
-                        break;
-
-                    default:
-                        System.out.println("Invalid option. Please choose a valid one.");
+                    }
+                    case 7 -> {
+                        userService.removeUser(currentUser.getId());
+                        currentUser = null; // logout the user since their account is now removed
+                        System.out.println("Your user account has been successfully removed.");
+                    }
+                    case 8 -> {
+                        System.out.println("Enter source account name:");
+                        String sourceAccountName = scanner.nextLine();
+                        System.out.println("Enter destination username:");
+                        String destinationUsername = scanner.nextLine();
+                        System.out.println("Enter amount:");
+                        double amountToUser = scanner.nextDouble();
+                        scanner.nextLine();
+                        try {
+                            transactionService.sendTransactionToUser(sourceAccountName, destinationUsername, amountToUser);
+                            System.out.println("Transaction successfully sent!");
+                        } catch (IllegalArgumentException e) {
+                            System.out.println(e.getMessage());
+                        } catch (SQLException e) {
+                            System.out.println("Transaction failed: " + e.getMessage());
+                        }
+                    }
+                    case 9 -> exit = true;
+                    default -> System.out.println("Invalid option. Please choose a valid one.");
                 }
             }
         }

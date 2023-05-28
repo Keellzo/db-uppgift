@@ -2,103 +2,91 @@ package org.kellzo.services;
 
 import org.kellzo.models.Account;
 import org.kellzo.models.Transaction;
+import org.kellzo.models.User;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionService {
     private final Connection connection;
     private final AccountService accountService;
-
+    private UserService userService; // removed final keyword
 
     public TransactionService(Connection connection, AccountService accountService) {
         this.connection = connection;
         this.accountService = accountService;
     }
 
-    private void createTableIfNotExist() throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS transactions (" +
-                "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                "from_account_id INT NOT NULL, " +
-                "to_account_id INT NOT NULL, " +
-                "amount DECIMAL(10, 2) NOT NULL, " +
-                "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                "FOREIGN KEY (from_account_id) REFERENCES accounts(id), " +
-                "FOREIGN KEY (to_account_id) REFERENCES accounts(id))";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.executeUpdate();
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
-
     public void addTransaction(Transaction transaction) throws SQLException {
-        String sql = "INSERT INTO transactions (from_account_id, to_account_id, amount, created) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO transactions (from_account_id, to_account_id, amount) VALUES (?, ?, ?)";
         PreparedStatement stmt = connection.prepareStatement(sql);
         stmt.setInt(1, transaction.getFromAccountId());
         stmt.setInt(2, transaction.getToAccountId());
         stmt.setDouble(3, transaction.getAmount());
-        stmt.setString(4, transaction.getCreated());
         stmt.executeUpdate();
     }
 
-    public void sendTransaction(int fromAccountId, int toAccountId, double amount) throws SQLException {
-        Account fromAccount = accountService.getAccount(fromAccountId);
+    public void sendTransactionToUser(String sourceAccountName, String destinationUsername, double amount) throws SQLException {
+        Account sourceAccount = accountService.getAccountByAccountName(sourceAccountName);
 
-        if (fromAccount.getBalance() < amount) {
-            throw new SQLException("Insufficient funds");
+        User destinationUser = userService.getUserByUsername(destinationUsername);
+        if (destinationUser == null) {
+            throw new IllegalArgumentException("Destination user does not exist.");
         }
 
-        String updateSql = "UPDATE accounts SET balance = balance - ? WHERE id = ?";
-        PreparedStatement updateStmt = connection.prepareStatement(updateSql);
-        updateStmt.setDouble(1, amount);
-        updateStmt.setInt(2, fromAccountId);
-        updateStmt.executeUpdate();
+        Account destinationAccount = accountService.getFirstAccountByUserId(destinationUser.getId());
 
-        updateSql = "UPDATE accounts SET balance = balance + ? WHERE id = ?";
-        updateStmt = connection.prepareStatement(updateSql);
-        updateStmt.setDouble(1, amount);
-        updateStmt.setInt(2, toAccountId);
-        updateStmt.executeUpdate();
+        if (sourceAccount.getBalance() < amount) {
+            throw new IllegalArgumentException("Source account does not have enough balance for the transaction.");
+        }
 
-        addTransaction(new Transaction(null, fromAccountId, toAccountId, amount));
+        // Create a new transaction from the source account to the destination account.
+        Transaction transaction = new Transaction();
+        transaction.setFromAccountId(sourceAccount.getId());
+        transaction.setToAccountId(destinationAccount.getId());
+        transaction.setAmount(amount);
+
+        // Update the balances of the source and destination accounts.
+        sourceAccount.setBalance(sourceAccount.getBalance() - amount);
+        destinationAccount.setBalance(destinationAccount.getBalance() + amount);
+
+        // Save the updated account balances and the new transaction.
+        accountService.updateAccount(sourceAccount);
+        accountService.updateAccount(destinationAccount);
+        addTransaction(transaction);
     }
 
-
-    public List<Transaction> getTransactions(int accountId, Date startDate, Date endDate) throws SQLException {
-        String sql = "SELECT * FROM transactions WHERE (from_account_id = ? OR to_account_id = ?) AND created BETWEEN ? AND ? ORDER BY created ASC";
+    public List<Transaction> getTransactionsForAccountBetweenDates(int accountId, Date startDate, Date endDate) throws SQLException {
+        String sql = "SELECT * FROM transactions WHERE (from_account_id = ? OR to_account_id = ?) AND (created BETWEEN ? AND ?) ORDER BY created";
         PreparedStatement stmt = connection.prepareStatement(sql);
         stmt.setInt(1, accountId);
         stmt.setInt(2, accountId);
         stmt.setDate(3, startDate);
         stmt.setDate(4, endDate);
+        return getTransactions(stmt);
+    }
+
+    private List<Transaction> getTransactions(PreparedStatement stmt) throws SQLException {
         ResultSet rs = stmt.executeQuery();
 
         List<Transaction> transactions = new ArrayList<>();
         while (rs.next()) {
-            Transaction transaction = new Transaction(rs.getInt("id"), rs.getString("created"), rs.getInt("from_account_id"), rs.getInt("to_account_id"), rs.getDouble("amount"));
-            transactions.add(transaction);
+            transactions.add(new Transaction(rs.getInt("id"), rs.getString("created"), rs.getInt("from_account_id"), rs.getInt("to_account_id"), rs.getDouble("amount")));
         }
-
 
         return transactions;
     }
 
-    public List<Transaction> getTransactionsForUser(int userId) throws SQLException {
+    public List<Transaction> getTransactionsForAccount(int accountId) throws SQLException {
         String sql = "SELECT * FROM transactions WHERE from_account_id = ? OR to_account_id = ?";
         PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.setInt(1, userId);
-        stmt.setInt(2, userId);
-        ResultSet rs = stmt.executeQuery();
-
-        List<Transaction> transactions = new ArrayList<>();
-        while (rs.next()) {
-            transactions.add(new Transaction(rs.getInt("id"), rs.getString("created"), rs.getInt("fromAccountId"), rs.getInt("toAccountId"), rs.getDouble("amount")));
-        }
-
-        return transactions;
+        stmt.setInt(1, accountId);
+        stmt.setInt(2, accountId);
+        return getTransactions(stmt);
     }
-
-
 }
-

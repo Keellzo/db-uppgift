@@ -4,17 +4,18 @@ public class Account extends Model {
     private int userId;
     private double balance;
 
-    private String accountNumber;
+    private String accountName;
 
-    public Account(int id, String created, int userId, double balance, String accountNumber) {
+    public Account(int id, String created, int userId, double balance, String accountName) {
         super(id, created);
         this.userId = userId;
         this.balance = balance;
-        this.accountNumber = accountNumber;
+        this.accountName = accountName;
     }
 
     public Account() {
     }
+
 
     public int getUserId() {
         return userId;
@@ -32,11 +33,11 @@ public class Account extends Model {
         this.balance = balance;
     }
 
-    public String getAccountNumber() {
-        return accountNumber;
+    public String getAccountName() {
+        return accountName;
     }
 
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
     }
 }

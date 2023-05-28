@@ -1,7 +1,5 @@
 package org.kellzo.models;
 
-import java.time.LocalDateTime;
-
 public class Model {
     protected int id;
     protected String created;
@@ -14,9 +12,6 @@ public class Model {
         this.created = created;
     }
 
-    public Model(String created) {
-        this.created = created;
-    }
 
     public int getId() {
         return id;

@@ -12,13 +12,6 @@ public class Transaction extends Model {
         this.amount = amount;
     }
 
-    public Transaction(String created, int fromAccountId, int toAccountId, double amount) {
-        super(created);
-        this.fromAccountId = fromAccountId;
-        this.toAccountId = toAccountId;
-        this.amount = amount;
-    }
-
 
     public Transaction() {
     }

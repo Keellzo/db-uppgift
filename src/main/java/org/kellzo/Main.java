@@ -1,18 +1,24 @@
 package org.kellzo;
 
+import org.kellzo.db.DBConnection;
+import org.kellzo.db.DBInitializer;
+import org.kellzo.view.Menu;
+
 import java.sql.*;
-import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
 
         try {
             Connection connection = DBConnection.getConnection();
             if (connection != null) {
-                System.out.println("Anslutning till databasen lyckades!");
-                System.out.println();
+                DBInitializer dbInitializer = new DBInitializer(connection);
+                dbInitializer.createUsersTableIfNotExist();
+                dbInitializer.createAccountsTableIfNotExist();
+                dbInitializer.createTransactionsTableIfNotExist();
 
+                Menu menu = new Menu(connection);
+                menu.start();
             }
 
         } catch (SQLException e) {

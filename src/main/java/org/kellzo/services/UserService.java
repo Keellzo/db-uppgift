@@ -7,6 +7,7 @@ import org.kellzo.models.UserSummary;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserService {
@@ -19,17 +20,7 @@ public class UserService {
         this.connection = connection;
         this.accountService = accountService;
         this.transactionService = transactionService;
-    }
 
-    private void createTableIfNotExist() throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS users (" +
-                "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                "username VARCHAR(255) NOT NULL, " +
-                "password VARCHAR(255) NOT NULL, " +
-                "social_security_number VARCHAR(255) UNIQUE NOT NULL, " +
-                "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.executeUpdate();
     }
 
     public User loginUser(String socialSecurityNumber, String password) throws SQLException {
@@ -42,31 +33,84 @@ public class UserService {
             String storedHashedPassword = rs.getString("password");
 
             if (BCrypt.checkpw(password, storedHashedPassword)) {
-                return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), rs.getString("password"), rs.getString("social_security_number"));
+                return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), password, rs.getString("social_security_number"));
             }
+
         }
 
         throw new SQLException("Invalid login details");
     }
 
     public void addUser(User user) throws SQLException {
-        String sql = "INSERT INTO users (username, password, social_security_number, created) VALUES (?, ?, ?, ?)";
-        PreparedStatement stmt = connection.prepareStatement(sql);
+        String sql = "INSERT INTO users (username, password, social_security_number) VALUES (?, ?, ?)";
+
 
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
 
+        PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         stmt.setString(1, user.getUsername());
+
         stmt.setString(2, hashedPassword);
         stmt.setString(3, user.getSocialSecurityNumber());
-        stmt.setString(4, user.getCreated());
-        stmt.executeUpdate();
+
+        int affectedRows = stmt.executeUpdate();
+
+        if (affectedRows == 0) {
+            throw new SQLException("Creating user failed, no rows affected.");
+        }
+
+        try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                user.setId(generatedKeys.getInt(1));
+            } else {
+                throw new SQLException("Creating user failed, no ID obtained.");
+            }
+        }
+
+    }
+
+    public User getUserByUsername(String username) throws SQLException {
+        String sql = "SELECT * FROM users WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), rs.getString("password"), rs.getString("social_security_number"));
+            } else {
+                throw new SQLException("User not found with username: " + username);
+            }
+        }
     }
 
     public void removeUser(int id) throws SQLException {
-        String sql = "DELETE FROM users WHERE id = ?";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.setInt(1, id);
-        stmt.executeUpdate();
+        String sqlAccounts = "SELECT id FROM accounts WHERE user_id = ?";
+        PreparedStatement stmtAccounts = connection.prepareStatement(sqlAccounts);
+        stmtAccounts.setInt(1, id);
+        ResultSet rs = stmtAccounts.executeQuery();
+
+        while (rs.next()) {
+            int accountId = rs.getInt("id");
+
+
+            String sqlTransactions = "DELETE FROM transactions WHERE from_account_id = ? OR to_account_id = ?";
+            PreparedStatement stmtTransactions = connection.prepareStatement(sqlTransactions);
+            stmtTransactions.setInt(1, accountId);
+            stmtTransactions.setInt(2, accountId);
+            stmtTransactions.executeUpdate();
+        }
+
+
+        String sqlRemoveAccounts = "DELETE FROM accounts WHERE user_id = ?";
+        PreparedStatement stmtRemoveAccounts = connection.prepareStatement(sqlRemoveAccounts);
+        stmtRemoveAccounts.setInt(1, id);
+        stmtRemoveAccounts.executeUpdate();
+
+
+        String sqlRemoveUser = "DELETE FROM users WHERE id = ?";
+        PreparedStatement stmtRemoveUser = connection.prepareStatement(sqlRemoveUser);
+        stmtRemoveUser.setInt(1, id);
+        stmtRemoveUser.executeUpdate();
     }
 
     public void updateUser(User user) throws SQLException {
@@ -97,10 +141,13 @@ public class UserService {
 
     public UserSummary getUserSummary(int userId) throws SQLException {
         User user = getUser(userId);
-        List<Account> accounts = accountService.getAccountsForUser(userId);
-        List<Transaction> transactions = transactionService.getTransactionsForUser(userId);
+        List<Account> accounts = accountService.getAccountsForUser(user);
+        List<Transaction> transactions = new ArrayList<>();
+
+        for (Account account : accounts) {
+            transactions.addAll(transactionService.getTransactionsForAccount(account.getId()));
+        }
 
         return new UserSummary(user, accounts, transactions);
     }
-
 }

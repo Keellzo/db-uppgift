@@ -1,4 +1,4 @@
-package org.kellzo;
+package org.kellzo.db;
 
 import java.io.InputStream;
 import java.io.IOException;

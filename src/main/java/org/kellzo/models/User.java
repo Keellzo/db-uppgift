@@ -15,6 +15,7 @@ public class User extends Model {
     public User() {
     }
 
+
     public String getUsername() {
         return username;
     }

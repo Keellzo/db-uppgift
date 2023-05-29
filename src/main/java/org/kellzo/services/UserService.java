@@ -33,24 +33,24 @@ public class UserService {
             String storedHashedPassword = rs.getString("password");
 
             if (BCrypt.checkpw(password, storedHashedPassword)) {
-                return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), password, rs.getString("social_security_number"));
+                return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), rs.getString("social_security_number"), rs.getString("mobile_number"));
             }
         }
 
         throw new SQLException("Invalid login details");
     }
 
-    public void addUser(User user) throws SQLException {
-        String sql = "INSERT INTO users (username, password, social_security_number) VALUES (?, ?, ?)";
 
+    public void addUser(User user) throws SQLException {
+        String sql = "INSERT INTO users (username, password, social_security_number, mobile_number) VALUES (?, ?, ?, ?)";
 
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
 
         PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         stmt.setString(1, user.getUsername());
-
         stmt.setString(2, hashedPassword);
         stmt.setString(3, user.getSocialSecurityNumber());
+        stmt.setString(4, user.getMobileNumber());
 
         int affectedRows = stmt.executeUpdate();
 
@@ -67,16 +67,16 @@ public class UserService {
         }
     }
 
-    public User getUserByUsername(String username) throws SQLException {
-        String sql = "SELECT * FROM users WHERE username = ?";
+    public User getUserByMobileNumber(String mobileNumber) throws SQLException {
+        String sql = "SELECT * FROM users WHERE mobile_number = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, username);
+            stmt.setString(1, mobileNumber);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), rs.getString("password"), rs.getString("social_security_number"));
+                return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), rs.getString("social_security_number"), rs.getString("mobile_number"));
             } else {
-                throw new SQLException("User not found with username: " + username);
+                throw new SQLException("User not found with mobile number: " + mobileNumber);
             }
         }
     }
@@ -112,7 +112,7 @@ public class UserService {
     }
 
     public void updateUser(User user) throws SQLException {
-        String sql = "UPDATE users SET username = ?, password = ?, social_security_number = ? WHERE id = ?";
+        String sql = "UPDATE users SET username = ?, password = ?, social_security_number = ?, mobile_number = ? WHERE id = ?";
         PreparedStatement stmt = connection.prepareStatement(sql);
 
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
@@ -120,7 +120,8 @@ public class UserService {
         stmt.setString(1, user.getUsername());
         stmt.setString(2, hashedPassword);
         stmt.setString(3, user.getSocialSecurityNumber());
-        stmt.setInt(4, user.getId());
+        stmt.setString(4, user.getMobileNumber());
+        stmt.setInt(5, user.getId());
         stmt.executeUpdate();
     }
 
@@ -131,7 +132,7 @@ public class UserService {
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
-            return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), rs.getString("password"), rs.getString("social_security_number"));
+            return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), rs.getString("password"), rs.getString("social_security_number"), rs.getString("mobile_number"));
         } else {
             return null;
         }

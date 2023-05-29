@@ -12,7 +12,6 @@ public class Transaction extends Model {
         this.amount = amount;
     }
 
-
     public Transaction() {
     }
 

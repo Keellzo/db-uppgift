@@ -12,7 +12,6 @@ public class Model {
         this.created = created;
     }
 
-
     public int getId() {
         return id;
     }

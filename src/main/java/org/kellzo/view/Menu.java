@@ -4,8 +4,10 @@ import org.kellzo.models.*;
 import org.kellzo.services.*;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -35,8 +37,15 @@ public class Menu {
                 System.out.println("2. Login");
                 System.out.println("3. Exit");
 
-                int option = scanner.nextInt();
-                scanner.nextLine();
+                int option;
+                try {
+                    option = scanner.nextInt();
+                } catch (InputMismatchException e) {
+                    System.out.println("Invalid input. Please enter a number.");
+                    scanner.nextLine();
+                    continue;
+                }
+
 
                 switch (option) {
                     case 1 -> {
@@ -121,16 +130,19 @@ public class Menu {
                         Account account = accountService.getAccountByAccountName(accountNameForTransactions);
                         System.out.println("Enter start date (format YYYY-MM-DD):");
                         String startDateInput = scanner.nextLine();
-                        Date startDate = Date.valueOf(startDateInput);
                         System.out.println("Enter end date (format YYYY-MM-DD):");
                         String endDateInput = scanner.nextLine();
-                        Date endDate = Date.valueOf(endDateInput);
-                        List<Transaction> transactions = transactionService.getTransactionsForAccountBetweenDates(account.getId(), startDate, endDate);
+
+                        LocalDate startDateLocalDate = LocalDate.parse(startDateInput);
+                        LocalDate endDateLocalDate = LocalDate.parse(endDateInput).plusDays(1);
+                        LocalDateTime startDateTime = startDateLocalDate.atStartOfDay();
+                        LocalDateTime endDateTime = endDateLocalDate.atStartOfDay();
+
+                        List<Transaction> transactions = transactionService.getTransactionsForAccountBetweenDates(account.getId(), startDateTime, endDateTime);
                         System.out.println("Transactions for account " + accountNameForTransactions + ":");
                         for (Transaction transaction : transactions) {
                             String fromAccountName = accountService.getAccountById(transaction.getFromAccountId()).getAccountName();
                             String toAccountName = accountService.getAccountById(transaction.getToAccountId()).getAccountName();
-
                             System.out.println(
                                     "Transaction ID: " + transaction.getId() +
                                             ", Created at: " + transaction.getCreated() +
@@ -142,7 +154,12 @@ public class Menu {
                     }
                     case 5 -> {
                         UserSummary userSummary = userService.getUserSummary(currentUser.getId());
-                        System.out.println("User: " + userSummary.getUser().getUsername());
+                        User user = userSummary.getUser();
+
+                        System.out.println("User: " + user.getUsername());
+                        System.out.println("Social Security Number: " + user.getSocialSecurityNumber());
+                        System.out.println("Mobile Number: " + user.getMobileNumber());
+
                         System.out.println("\nAccounts:");
                         for (Account accounts : userSummary.getAccounts()) {
                             System.out.println("Account ID: " + accounts.getId() +
@@ -173,13 +190,13 @@ public class Menu {
                     case 8 -> {
                         System.out.println("Enter source account name:");
                         String sourceAccountName = scanner.nextLine();
-                        System.out.println("Enter destination username:");
-                        String destinationUsername = scanner.nextLine();
+                        System.out.println("Enter destination mobile number:");
+                        String destinationMobileNumber = scanner.nextLine();
                         System.out.println("Enter amount:");
                         double amountToUser = scanner.nextDouble();
                         scanner.nextLine();
                         try {
-                            transactionService.sendTransactionToUser(sourceAccountName, destinationUsername, amountToUser);
+                            transactionService.sendTransactionToUser(sourceAccountName, destinationMobileNumber, amountToUser);
                             System.out.println("Transaction successfully sent!");
                         } catch (IllegalArgumentException e) {
                             System.out.println(e.getMessage());

@@ -5,6 +5,7 @@ import org.kellzo.models.Transaction;
 import org.kellzo.models.User;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,10 +32,10 @@ public class TransactionService {
         stmt.executeUpdate();
     }
 
-    public void sendTransactionToUser(String sourceAccountName, String destinationUsername, double amount) throws SQLException {
+    public void sendTransactionToUser(String sourceAccountName, String destinationMobileNumber, double amount) throws SQLException {
         Account sourceAccount = accountService.getAccountByAccountName(sourceAccountName);
 
-        User destinationUser = userService.getUserByUsername(destinationUsername);
+        User destinationUser = userService.getUserByMobileNumber(destinationMobileNumber);
         if (destinationUser == null) {
             throw new IllegalArgumentException("Destination user does not exist.");
         }
@@ -45,31 +46,30 @@ public class TransactionService {
             throw new IllegalArgumentException("Source account does not have enough balance for the transaction.");
         }
 
-
         Transaction transaction = new Transaction();
         transaction.setFromAccountId(sourceAccount.getId());
         transaction.setToAccountId(destinationAccount.getId());
         transaction.setAmount(amount);
 
-
         sourceAccount.setBalance(sourceAccount.getBalance() - amount);
         destinationAccount.setBalance(destinationAccount.getBalance() + amount);
-
 
         accountService.updateAccount(sourceAccount);
         accountService.updateAccount(destinationAccount);
         addTransaction(transaction);
     }
 
-    public List<Transaction> getTransactionsForAccountBetweenDates(int accountId, Date startDate, Date endDate) throws SQLException {
+
+    public List<Transaction> getTransactionsForAccountBetweenDates(int accountId, LocalDateTime startDateTime, LocalDateTime endDateTime) throws SQLException {
         String sql = "SELECT * FROM transactions WHERE (from_account_id = ? OR to_account_id = ?) AND (created BETWEEN ? AND ?) ORDER BY created";
         PreparedStatement stmt = connection.prepareStatement(sql);
         stmt.setInt(1, accountId);
         stmt.setInt(2, accountId);
-        stmt.setDate(3, startDate);
-        stmt.setDate(4, endDate);
+        stmt.setTimestamp(3, Timestamp.valueOf(startDateTime));
+        stmt.setTimestamp(4, Timestamp.valueOf(endDateTime));
         return getTransactions(stmt);
     }
+
 
     private List<Transaction> getTransactions(PreparedStatement stmt) throws SQLException {
         ResultSet rs = stmt.executeQuery();

@@ -17,6 +17,7 @@ public class DBInitializer {
                 "username VARCHAR(255) NOT NULL, " +
                 "password VARCHAR(255) NOT NULL, " +
                 "social_security_number VARCHAR(255) UNIQUE NOT NULL, " +
+                "mobile_number VARCHAR(15) UNIQUE NOT NULL, " +
                 "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.executeUpdate();

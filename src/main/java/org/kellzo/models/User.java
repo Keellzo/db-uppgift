@@ -5,16 +5,33 @@ public class User extends Model {
     private String password;
     private String socialSecurityNumber;
 
-    public User(int id, String created, String username, String password, String socialSecurityNumber) {
+    private String mobileNumber;
+
+    public User(int id, String created, String username, String password, String socialSecurityNumber, String mobileNumber) {
         super(id, created);
         this.username = username;
         this.password = password;
         this.socialSecurityNumber = socialSecurityNumber;
+        this.mobileNumber = mobileNumber;
+    }
+
+    public User(int id, String created, String username, String socialSecurityNumber, String mobileNumber) {
+        super(id, created);
+        this.username = username;
+        this.socialSecurityNumber = socialSecurityNumber;
+        this.mobileNumber = mobileNumber;
     }
 
     public User() {
     }
 
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
 
     public String getUsername() {
         return username;

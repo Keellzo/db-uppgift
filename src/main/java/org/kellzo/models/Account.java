@@ -13,10 +13,6 @@ public class Account extends Model {
         this.accountName = accountName;
     }
 
-    public Account() {
-    }
-
-
     public int getUserId() {
         return userId;
     }

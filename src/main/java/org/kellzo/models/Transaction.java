@@ -1,5 +1,6 @@
 package org.kellzo.models;
 
+// The Transaction class represents a financial transaction between two accounts
 public class Transaction extends Model {
     private int fromAccountId;
     private int toAccountId;

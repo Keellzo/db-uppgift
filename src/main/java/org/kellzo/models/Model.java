@@ -1,5 +1,6 @@
 package org.kellzo.models;
 
+// The Model class serves as the base class for all other model classes
 public class Model {
     protected int id;
     protected String created;
@@ -20,7 +21,7 @@ public class Model {
         this.id = id;
     }
 
-    public String  getCreated() {
+    public String getCreated() {
         return created;
     }
 

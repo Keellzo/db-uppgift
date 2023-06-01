@@ -40,6 +40,7 @@ public class Menu {
                 int option;
                 try {
                     option = scanner.nextInt();
+                    scanner.nextLine();
                 } catch (InputMismatchException e) {
                     System.out.println("Invalid input. Please enter a number.");
                     scanner.nextLine();
@@ -55,10 +56,13 @@ public class Menu {
                         String addPassword = scanner.nextLine();
                         System.out.println("Enter social security number:");
                         String addSocialSecurityNumber = scanner.nextLine();
+                        System.out.println("Enter mobile number:");
+                        String addMobileNumber = scanner.nextLine();
                         User newUser = new User();
                         newUser.setUsername(addUsername);
                         newUser.setPassword(addPassword);
                         newUser.setSocialSecurityNumber(addSocialSecurityNumber);
+                        newUser.setMobileNumber(addMobileNumber);
                         userService.addUser(newUser);
                         currentUser = newUser;
                         System.out.println("User successfully added!");
@@ -68,6 +72,7 @@ public class Menu {
                         String loginSocialSecurityNumber = scanner.nextLine();
                         System.out.println("Enter password:");
                         String loginPassword = scanner.nextLine();
+
                         try {
                             currentUser = userService.loginUser(loginSocialSecurityNumber, loginPassword);
                             System.out.println("Login successful!");
@@ -79,6 +84,7 @@ public class Menu {
                     default -> System.out.println("Invalid option. Please choose a valid one.");
                 }
             } else {
+                System.out.println("Welcome, " + currentUser.getUsername() + "!");
                 System.out.println("Select an option: ");
                 System.out.println("1. Add Account");
                 System.out.println("2. Remove Account");
@@ -118,9 +124,12 @@ public class Menu {
                         String newPassword = scanner.nextLine();
                         System.out.println("Enter new social security number:");
                         String newSocialSecurityNumber = scanner.nextLine();
+                        System.out.println("Enter new mobile number:");
+                        String newMobileNumber = scanner.nextLine();
                         currentUser.setUsername(newUsername);
                         currentUser.setPassword(newPassword);
                         currentUser.setSocialSecurityNumber(newSocialSecurityNumber);
+                        currentUser.setMobileNumber(newMobileNumber);
                         userService.updateUser(currentUser);
                         System.out.println("User details successfully updated!");
                     }

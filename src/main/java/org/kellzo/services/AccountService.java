@@ -7,6 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+// The AccountService class encapsulates the business logic related to account operations
 public class AccountService {
     private final Connection connection;
 
@@ -14,6 +15,7 @@ public class AccountService {
         this.connection = connection;
     }
 
+    // Method to get an account by its ID
     public Account getAccountById(int id) throws SQLException {
         String sql = "SELECT * FROM accounts WHERE id = ?";
         PreparedStatement stmt = connection.prepareStatement(sql);
@@ -27,6 +29,7 @@ public class AccountService {
         }
     }
 
+    // Method to get an account by its name
     public Account getAccountByAccountName(String accountName) throws SQLException {
         String sql = "SELECT * FROM accounts WHERE account_name = ?";
         PreparedStatement stmt = connection.prepareStatement(sql);
@@ -40,9 +43,10 @@ public class AccountService {
         }
     }
 
+    // Method to get the first account of a user by user ID
     public Account getFirstAccountByUserId(int userId) throws SQLException {
-        String query = "SELECT * FROM Accounts WHERE user_id = ? ORDER BY id ASC LIMIT 1";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        String sql = "SELECT * FROM Accounts WHERE user_id = ? ORDER BY id ASC LIMIT 1";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, userId);
             ResultSet resultSet = statement.executeQuery();
 
@@ -54,6 +58,7 @@ public class AccountService {
         }
     }
 
+    // Helper method to create an Account object from a ResultSet
     private Account createAccountFromResultSet(ResultSet rs) throws SQLException {
         return new Account(
                 rs.getInt("id"),
@@ -64,6 +69,7 @@ public class AccountService {
         );
     }
 
+    // Method to update an account in the database
     public void updateAccount(Account account) throws SQLException {
         String query = "UPDATE Accounts SET balance = ? WHERE id = ?";
         PreparedStatement statement = connection.prepareStatement(query);
@@ -78,16 +84,17 @@ public class AccountService {
         }
     }
 
+    // Method to add an account to the database
     public void addAccount(Account account) throws SQLException {
-        String sql = "INSERT INTO accounts (user_id, balance, account_name, created) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO accounts (user_id, balance, account_name) VALUES (?, ?, ?)";
         PreparedStatement stmt = connection.prepareStatement(sql);
         stmt.setInt(1, account.getUserId());
         stmt.setDouble(2, account.getBalance());
         stmt.setString(3, account.getAccountName());
-        stmt.setString(4, account.getCreated());
         stmt.executeUpdate();
     }
 
+    // Method to remove an account from the database
     public void removeAccount(String accountName) throws SQLException {
         String sql = "DELETE FROM accounts WHERE account_name = ?";
         PreparedStatement stmt = connection.prepareStatement(sql);
@@ -95,6 +102,7 @@ public class AccountService {
         stmt.executeUpdate();
     }
 
+    // Method to get all accounts for a user
     public List<Account> getAccountsForUser(User user) throws SQLException {
         String sql = "SELECT * FROM users JOIN accounts ON users.id = accounts.user_id WHERE users.id = ?";
         PreparedStatement stmt = connection.prepareStatement(sql);

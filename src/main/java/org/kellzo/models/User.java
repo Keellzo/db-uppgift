@@ -1,19 +1,12 @@
 package org.kellzo.models;
 
+// The User class represents a user of the banking system
 public class User extends Model {
     private String username;
     private String password;
     private String socialSecurityNumber;
 
     private String mobileNumber;
-
-    public User(int id, String created, String username, String password, String socialSecurityNumber, String mobileNumber) {
-        super(id, created);
-        this.username = username;
-        this.password = password;
-        this.socialSecurityNumber = socialSecurityNumber;
-        this.mobileNumber = mobileNumber;
-    }
 
     public User(int id, String created, String username, String socialSecurityNumber, String mobileNumber) {
         super(id, created);

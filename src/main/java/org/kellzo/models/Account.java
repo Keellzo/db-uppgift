@@ -1,9 +1,9 @@
 package org.kellzo.models;
 
+// The Account class represents a bank account
 public class Account extends Model {
     private int userId;
     private double balance;
-
     private String accountName;
 
     public Account(int id, String created, int userId, double balance, String accountName) {

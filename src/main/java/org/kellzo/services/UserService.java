@@ -10,12 +10,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+// The UserService class encapsulates the business logic related to user operations
 public class UserService {
     private final Connection connection;
     private final AccountService accountService;
     private final TransactionService transactionService;
 
 
+    // Constructor to initialize the UserService with required dependencies
     public UserService(Connection connection, AccountService accountService, TransactionService transactionService) {
         this.connection = connection;
         this.accountService = accountService;
@@ -23,6 +25,7 @@ public class UserService {
 
     }
 
+    // Method to authenticate a user using their social security number and password
     public User loginUser(String socialSecurityNumber, String password) throws SQLException {
         String sql = "SELECT * FROM users WHERE social_security_number = ?";
         PreparedStatement stmt = connection.prepareStatement(sql);
@@ -40,7 +43,7 @@ public class UserService {
         throw new SQLException("Invalid login details");
     }
 
-
+    // Method to add a new user
     public void addUser(User user) throws SQLException {
         String sql = "INSERT INTO users (username, password, social_security_number, mobile_number) VALUES (?, ?, ?, ?)";
 
@@ -67,6 +70,7 @@ public class UserService {
         }
     }
 
+    // Method to fetch user details based on mobile number
     public User getUserByMobileNumber(String mobileNumber) throws SQLException {
         String sql = "SELECT * FROM users WHERE mobile_number = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -81,6 +85,7 @@ public class UserService {
         }
     }
 
+    // Method to remove a user from the system along with their accounts and related transactions
     public void removeUser(int id) throws SQLException {
         String sqlAccounts = "SELECT id FROM accounts WHERE user_id = ?";
         PreparedStatement stmtAccounts = connection.prepareStatement(sqlAccounts);
@@ -111,6 +116,7 @@ public class UserService {
         stmtRemoveUser.executeUpdate();
     }
 
+    // Method to update an existing user's details in the system
     public void updateUser(User user) throws SQLException {
         String sql = "UPDATE users SET username = ?, password = ?, social_security_number = ?, mobile_number = ? WHERE id = ?";
         PreparedStatement stmt = connection.prepareStatement(sql);
@@ -125,6 +131,7 @@ public class UserService {
         stmt.executeUpdate();
     }
 
+    // Method to fetch a user's details by their ID
     public User getUser(int id) throws SQLException {
         String sql = "SELECT * FROM users WHERE id = ?";
         PreparedStatement stmt = connection.prepareStatement(sql);
@@ -132,12 +139,13 @@ public class UserService {
         ResultSet rs = stmt.executeQuery();
 
         if (rs.next()) {
-            return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), rs.getString("password"), rs.getString("social_security_number"), rs.getString("mobile_number"));
+            return new User(rs.getInt("id"), rs.getString("created"), rs.getString("username"), rs.getString("social_security_number"), rs.getString("mobile_number"));
         } else {
             return null;
         }
     }
 
+    // Method to fetch a summary of a user's details, including their accounts and related transactions
     public UserSummary getUserSummary(int userId) throws SQLException {
         User user = getUser(userId);
         List<Account> accounts = accountService.getAccountsForUser(user);

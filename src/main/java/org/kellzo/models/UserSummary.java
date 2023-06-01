@@ -2,6 +2,7 @@ package org.kellzo.models;
 
 import java.util.List;
 
+// The UserSummary class encapsulates a user's information, including their accounts and transactions
 public class UserSummary {
     private User user;
     private List<Account> accounts;

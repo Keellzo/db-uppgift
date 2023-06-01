@@ -32,6 +32,11 @@ public class Menu {
 
         while (!exit) {
             if (currentUser == null) {
+                // Syftet med att printa lösenorden är för att underlätta testning för läraren
+                System.out.println("Lösenord för rana: rana" + "\n" +
+                        "Lösenord för kelly: kelly" + "\n" +
+                        "Lösenord för test: test");
+                System.out.println();
                 System.out.println("Select an option: ");
                 System.out.println("1. Add User");
                 System.out.println("2. Login");

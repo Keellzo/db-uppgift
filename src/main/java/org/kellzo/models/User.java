@@ -5,7 +5,6 @@ public class User extends Model {
     private String username;
     private String password;
     private String socialSecurityNumber;
-
     private String mobileNumber;
 
     public User(int id, String created, String username, String socialSecurityNumber, String mobileNumber) {
